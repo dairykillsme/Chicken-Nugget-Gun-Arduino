@@ -37,7 +37,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
         Serial.println("Connection Succeful");
         break;
     case WStype_TEXT:
-
+        Serial.printf("[%u] get Text: %s\n", num, payload);
         break;
     }
 }
