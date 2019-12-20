@@ -20,7 +20,8 @@ void CodeChecker::Init()
     {
         for (int j = 0; j < codeLength; j++)
         {
-            codes[i] = codes[i] + numChar[random(sizeof(numChar))];
+            char randChar = numChar[random(sizeof(numChar)-1)];
+            codes[i] += randChar;
         }
     }
 }
@@ -37,26 +38,24 @@ String CodeChecker::getCode(int index)
 
 bool CodeChecker::readCode(char readChar, int index)
 {
-    static String guessCode;
-    static int guessIndex;
+    static String guessCode = "";
+    static int guessIndex = 0;
     if (guessIndex != index)
     {
         guessIndex = index;
-        guessCode = readChar;
-        return false;
+        guessCode = "";
     }
-    else
+    if (readChar == '#')
     {
-        guessCode += readChar;
         if (codes[guessIndex] == guessCode)
         {
             return true;
         }
-        else
-        {
-            guessCode = "";
-            return false;
-        }
-        
+        guessCode = "";
     }
+    else
+    {
+        guessCode += readChar;
+    }
+    return false;
 }

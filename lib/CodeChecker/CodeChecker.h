@@ -1,5 +1,5 @@
 #include <Arduino.h>
-const char numChar [] = "0123456789";
+const char numChar [] = "0123456789*";
 
 class CodeChecker
 {
