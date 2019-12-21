@@ -49,6 +49,7 @@ bool CodeChecker::readCode(char readChar, int index)
     {
         if (codes[guessIndex] == guessCode)
         {
+            guessCode = "";
             return true;
         }
         guessCode = "";
