@@ -158,6 +158,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
   case WStype_DISCONNECTED:
     Serial.printf("[%u] Disconnected!\n", num);
     standby = false;
+    laser = false;
     break;
   case WStype_CONNECTED:
     Serial.println("Connection Succeful");
