@@ -14,6 +14,8 @@ const char *PWD = "198Geniuses";
 
 WebSocketsServer webSocket(81);
 
+const int boi = D10;
+
 //Code Constants and Variables
 const byte NUM_CODES = 2;
 const byte CODE_LENGTH = 5;
@@ -57,6 +59,9 @@ bool consent = false;
 //Laser
 const byte LASER_PIN = D8;
 
+//Motor Setup
+const byte MOTOR_PIN = D10; //motor on TX pin
+
 // function prototypes
 void SendCodes();
 bool CheckStandby();
@@ -83,20 +88,24 @@ void setup()
   lastMillis = millis();
   //Laser and Motor Setup
   pinMode(LASER_PIN, OUTPUT);
+  pinMode(MOTOR_PIN, OUTPUT);
   //IR Remote Setup
   irrecv.enableIRIn();
 }
 
 void loop()
 {
-  CheckConsent();
   webSocket.loop();
   digitalWrite(LASER_PIN, laser);
+  digitalWrite(MOTOR_PIN, consent);
   if (webSocket.connectedClients() > 0)
   {
     if (CheckStandby())
     {
-
+      if (CheckConsent())
+      {
+        //Run Motors
+      }
     }
   }
 }
@@ -271,6 +280,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
     Serial.printf("[%u] Disconnected!\n", num);
     standby = false;
     laser = false;
+    consent = false;
     break;
   case WStype_CONNECTED:
     Serial.println("Connection Succeful");
