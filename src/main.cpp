@@ -3,6 +3,10 @@
 #include <WebSocketsServer.h>
 #include <CodeChecker.h>
 #include <Keypad.h>
+#include <IRremoteESP8266.h>
+#include <IRrecv.h>
+#include <IRutils.h>
+#include <SamsungCodes.h>
 
 //Websocket and Wifi Constants and Variables
 const char *SSID = "SIMPLEWIFI";
@@ -34,6 +38,13 @@ byte colPins[COLS] = {D5, D6, D7};     //connect to the column pinouts of the kp
 
 Keypad kpd = Keypad(makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS);
 
+//IR Remote Setup and Constants
+const byte IR_PIN = D4;
+
+IRrecv irrecv(IR_PIN);
+
+decode_results results;
+
 unsigned long lastMillis;
 
 // gun states
@@ -49,6 +60,8 @@ const byte LASER_PIN = D8;
 // function prototypes
 void SendCodes();
 bool CheckStandby();
+bool CheckConsent();
+char ReadIR();
 void WifiConnect(const String &ssid, const String &password);
 void StartWebSocket(WebSocketsServer &webSocket);
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length);
@@ -70,10 +83,13 @@ void setup()
   lastMillis = millis();
   //Laser and Motor Setup
   pinMode(LASER_PIN, OUTPUT);
+  //IR Remote Setup
+  irrecv.enableIRIn();
 }
 
 void loop()
 {
+  CheckConsent();
   webSocket.loop();
   digitalWrite(LASER_PIN, laser);
   if (webSocket.connectedClients() > 0)
@@ -115,11 +131,107 @@ bool CheckStandby()
         {
           webSocket.sendTXT(i, "STNDBY");
         }
-
         return true;
       }
     }
     return false;
+  }
+}
+
+bool CheckConsent()
+{
+  if (consent)
+  {
+    return true;
+  }
+  else
+  {
+    char readKey = ReadIR();
+    if (readKey != NO_KEY)
+    {
+      Serial.println(readKey);
+      if (codes.readCode(readKey, CONSENT_CODE))
+      {
+        consent = true;
+        Serial.print("Consent");
+        for (int i = 0; i < webSocket.connectedClients(); i++)
+        {
+          webSocket.sendTXT(i, "CONSENT");
+        }
+        return true;
+      }
+    }
+    return false;
+  }
+}
+
+char ReadIR()
+{
+  if (irrecv.decode(&results)) 
+  {
+    if (millis() - lastMillis < 500)
+    {
+      irrecv.resume();
+      return NO_KEY;
+    }
+    serialPrintUint64(results.value, HEX);
+    Serial.print(" ");
+    lastMillis = millis();
+    switch (results.value)
+    {
+    case HEX_POWER:
+      irrecv.resume();  // Receive the next value
+      return '#';
+      break;
+    case HEX_1:
+      irrecv.resume();  // Receive the next value
+      return '1';
+      break;
+    case HEX_2:
+      irrecv.resume();  // Receive the next value
+      return '2';
+      break;
+    case HEX_3:
+      irrecv.resume();  // Receive the next value
+      return '3';
+      break;
+    case HEX_4:
+      irrecv.resume();  // Receive the next value
+      return '4';
+      break;
+    case HEX_5:
+      irrecv.resume();  // Receive the next value
+      return '5';
+      break;
+    case HEX_6:
+      irrecv.resume();  // Receive the next value
+      return '6';
+      break;
+    case HEX_7:
+      irrecv.resume();  // Receive the next value
+      return '7';
+      break;
+    case HEX_8:
+      irrecv.resume();  // Receive the next value
+      return '8';
+      break;
+    case HEX_9:
+      irrecv.resume();  // Receive the next value
+      return '9';
+      break;
+    case HEX_0:
+      irrecv.resume();  // Receive the next value
+      return '0';
+      break;
+    default:
+      irrecv.resume();  // Receive the next value
+      return NO_KEY;
+      break;
+    }
+  }
+  else
+  {
+    return NO_KEY;
   }
 }
 
